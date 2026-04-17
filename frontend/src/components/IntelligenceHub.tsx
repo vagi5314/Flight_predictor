@@ -21,8 +21,14 @@ const FEATURE_NAMES: Record<string, string> = {
   'dep_hour_cos': 'Time of Day',
 };
 
+interface ShapValue {
+  feature: string;
+  impact: number;
+}
+
 // Per-factor aviation explanations (real, not placeholder)
 const FEATURE_EXPLANATIONS: Record<string, string> = {
+
   'SCHEDULED_DEPARTURE': 'Flights later in the day are more prone to delays as morning disruptions cascade forward.',
   'ORIGIN_AIRPORT': 'Delay risk is driven by the airport\'s historical congestion and runway capacity.',
   'DESTINATION_AIRPORT': 'Arrival traffic and gate availability at the destination significantly impact on-time performance.',
@@ -70,7 +76,8 @@ export default function IntelligenceHub({ data, isLoading }: any) {
   }
 
   // Find the biggest risk driver for dynamic max-scaling
-  const topFactor = [...data.shap_values].sort((a: any, b: any) => Math.abs(b.impact) - Math.abs(a.impact))[0];
+  const sortedShap = [...data.shap_values].sort((a: ShapValue, b: ShapValue) => Math.abs(b.impact) - Math.abs(a.impact));
+  const topFactor = sortedShap[0];
   const topFactorName = humanizeFeature(topFactor?.feature || '');
   const maxImpact = Math.abs(topFactor?.impact) || 1;
 
@@ -83,12 +90,12 @@ export default function IntelligenceHub({ data, isLoading }: any) {
 
   // Transform SHAP values for Bipolar Radar Chart
   const topFeatures = [...data.shap_values]
-    .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
+    .sort((a: ShapValue, b: ShapValue) => Math.abs(b.impact) - Math.abs(a.impact))
     .slice(0, 6);
 
   const localMaxImpact = Math.abs(topFeatures[0]?.impact) || 1;
 
-  const bipolarData = topFeatures.map((s: any) => {
+  const bipolarData = topFeatures.map((s: ShapValue) => {
     const magnitude = Math.abs(s.impact) / localMaxImpact;
     const scaledValue = Math.sqrt(magnitude) * 100;
 
@@ -101,7 +108,7 @@ export default function IntelligenceHub({ data, isLoading }: any) {
   });
 
   // Count risk factors
-  const riskUpCount = data.shap_values.filter((s: any) => s.impact > 0).length;
+  const riskUpCount = data.shap_values.filter((s: ShapValue) => s.impact > 0).length;
   const totalFactors = data.shap_values.length;
 
   // Data for the 3-bar comparison
@@ -199,7 +206,7 @@ export default function IntelligenceHub({ data, isLoading }: any) {
 
             {/* Factor List */}
             <div className="flex flex-wrap gap-2 mt-2 mb-2 z-10 w-full">
-              {data.shap_values.sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)).map((s: any) => (
+              {data.shap_values.sort((a: ShapValue, b: ShapValue) => Math.abs(b.impact) - Math.abs(a.impact)).map((s: ShapValue) => (
                 <div key={s.feature} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider ${
                   s.impact > 0
                     ? 'bg-red-500/10 border-red-500/30 text-red-400'
@@ -375,7 +382,7 @@ export default function IntelligenceHub({ data, isLoading }: any) {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {data.shap_values.slice(0, 4).map((item: any) => (
+            {data.shap_values.slice(0, 4).map((item: ShapValue) => (
               <div key={item.feature} className="p-6 bg-black/40 rounded-3xl border border-white/10 flex flex-col justify-between min-h-[200px] shadow-xl relative overflow-hidden group">
                 
                 {/* Subtle gradient glow matching the impact */}
