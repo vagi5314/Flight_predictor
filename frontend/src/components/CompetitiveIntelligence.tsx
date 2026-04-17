@@ -9,7 +9,7 @@ export default function CompetitiveIntelligence() {
     const [data, setData] = useState<any[]>([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/analytics/airlines').then(res => {
+        axios.get('https://flightpredictor-production.up.railway.app/analytics/airlines').then(res => {
             const mapped = res.data.airline_chart.map((item: any) => ({
                 ...item,
                 fullName: getAirlineName(item.carrier)

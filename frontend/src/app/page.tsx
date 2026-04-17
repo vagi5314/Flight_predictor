@@ -27,8 +27,7 @@ export default function AeroMetricGlass() {
   const [techStats, setTechStats] = useState<any>(null);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    axios.get(`${apiUrl}/analytics/global`).then(res => {
+    axios.get(`https://flightpredictor-production.up.railway.app/analytics/global`).then(res => {
       setTechStats(res.data.tech_stats);
     }).catch(() => {});
   }, []);
