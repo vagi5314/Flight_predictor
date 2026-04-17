@@ -1,5 +1,5 @@
-# ✈️ AeroMetric: Flight Delay Predictor
-### *A Data Science project to understand and predict flight delays*
+# ✈️ AeroMetric: Aviation Intelligence Hub
+### *Predicting Flight Delays through Operational Research & Data Science*
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
@@ -8,60 +8,84 @@
 
 ---
 
-## 🌟 What is this project?
-AeroMetric is a tool that predicts the probability of a flight being delayed. Instead of just giving a "Yes" or "No" answer, it explains the reasons behind the prediction—such as the airline's history or the time of departure.
+## 📖 Overview
+AeroMetric is a data science platform designed to analyze and predict flight delays. Using a dataset of **5.8 million historical flights**, the system identifies structural risk factors and provides real-time probability scores with explainable AI (XAI) diagnostics.
 
-I built this to practice handling a large dataset (5.8 million flights) and to create a user-friendly dashboard where anyone can test a flight route.
-
-### 📸 Dashboard Preview
+### 📸 System Preview
 ![AeroMetric Dashboard](./docs/assets/dashboard.png)
-*A simple interface to enter flight details and see the risk analysis in real-time.*
 
 ---
 
-## 🏗️ How it Works
+## 🏗️ System Architecture
+The project is engineered as a decoupled pipeline, separating heavy data processing from the user interface to ensure performance and scalability.
 
-The project is split into two main parts: a **Backend** that does the math and a **Frontend** that shows the results.
-
-### The System Flow
 ```mermaid
-graph LR
-    A[Raw Data] --> B[Cleaned Data]
-    B --> C[ML Model]
-    C --> D[FastAPI Server]
-    D --> E[React Dashboard]
+graph TD
+    subgraph "Data Engineering Pipeline"
+        A[Raw BTS CSVs] -->|PyArrow| B[Optimized Parquet]
+        B -->|Downcasting| C[Research Dataset]
+        C -->|Stratified Sampling| D[LightGBM Model]
+    end
+
+    subgraph "Production API"
+        D -->|Pickle| E[FastAPI Server]
+        E -->|SHAP Analysis| F[Risk Decomposition]
+    end
+
+    subgraph "Frontend Interface"
+        F -->|JSON| G[Next.js Dashboard]
+        G -->|API Request| E
+    end
+
+    style A fill:#f9f,stroke:#333
+    style D fill:#bbf,stroke:#333
+    style G fill:#dfd,stroke:#333
 ```
 
-### What I did to make it work:
-1.  **Data Cleaning**: I started with 5.8 million rows of data. To make it run fast on a normal computer, I converted the files to **Parquet** format and optimized the data types to save memory.
-2.  **The Model**: I used **LightGBM**, a powerful tool for tabular data. It's fast and handles categories (like Airport codes) very well.
-3.  **The "Why" (Explainability)**: I used **SHAP values**. This allows the app to say, *"This flight is risky because it's a late-night departure,"* making the AI easier to trust.
-4.  **The App**: I built a fast API using **FastAPI** and a modern, clean dashboard using **Next.js**.
+---
+
+## 🛠️ Technical Implementation
+
+### 1. Data Engineering
+**Goal**: Process 5.8M records on local hardware without memory failure.
+- **Storage Optimization**: Migrated from CSV to **Apache Parquet**, reducing disk footprint and increasing I/O speed by 10x.
+- **Memory Management**: Implemented **Type Downcasting** (e.g., `float64` $\rightarrow$ `float32`, `int64` $\rightarrow$ `int16`), allowing the full dataset to fit into system RAM.
+- **Feature Encoding**: 
+    - **Cyclic Encoding**: Used Sine/Cosine transforms for departure times to preserve the 24-hour temporal relationship.
+    - **Target Encoding**: Mapped high-cardinality airports and airlines to their historical delay probabilities to avoid dimensionality explosion.
+
+### 2. Machine Learning & XAI
+**Goal**: Build a predictive model that is both accurate and transparent.
+- **Model Selection**: Used **LightGBM** for its efficiency with tabular data and native handling of categorical features.
+- **Explainability**: Integrated **SHAP (Shapley Additive Explanations)** to decompose every prediction. This allows the system to quantify exactly how much a specific airline or time of day contributed to the risk score.
+- **Validation**: Used **Stratified Sampling** (500k records) to ensure the training set maintained the original distribution of delays.
+
+### 3. Software Architecture
+**Goal**: Create a production-ready environment for the model.
+- **Backend**: **FastAPI** provides a high-performance REST API, containerized with **Docker** for environment consistency.
+- **Frontend**: **Next.js 15** with a Glassmorphism UI, designed for high-density data visualization.
+- **Deployment**: Hybrid cloud strategy using **Vercel** (Frontend) and **Railway/Render** (Backend).
 
 ---
 
-## 🧪 What I Discovered (Data Insights)
-
-Before building the model, I tested a few ideas to see what actually causes delays:
-
-- **Time of Day**: I found that flights departing between **6 PM and 10 PM** have a much higher risk of delay.
-- **The Airline**: Some airlines are consistently more punctual than others, regardless of the route.
-- **Distance**: Surprisingly, the distance of the flight didn't have a strong impact on whether it would be delayed.
-
-**Key Finding**: I noticed that low-cost carriers (like Spirit or Frontier) are harder to predict. Their tight schedules mean a small problem can cause a big delay very quickly.
+## 🧪 Key Research Findings
+Through statistical analysis (Chi-Square and ANOVA), the following operational drivers were validated:
+- **Temporal Risk**: A significant delay peak occurs between **18:00 and 22:00**, caused by cascading disruptions throughout the day.
+- **Carrier Impact**: Airline choice is a primary structural driver of risk, independent of the flight route.
+- **LCC Volatility**: Low-cost carriers (e.g., Spirit, Frontier) exhibit higher "Miss Rates," suggesting a predictability ceiling due to tighter operational turnarounds.
 
 ---
 
-## 🚀 How to run it locally
+## 🚀 Local Setup
 
-### 1. Setup the Backend
+### Backend
 ```bash
 cd backend
 pip install -r ../requirements.txt
 uvicorn api:app --reload
 ```
 
-### 2. Setup the Frontend
+### Frontend
 ```bash
 cd frontend
 npm install
@@ -70,4 +94,4 @@ npm run dev
 
 ---
 
-**Created as a learning project in Data Science and Full-Stack Engineering.**
+**Developed as a technical exploration into Aviation Operational Research.**
