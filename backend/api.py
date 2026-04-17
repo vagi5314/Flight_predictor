@@ -1,4 +1,8 @@
-import pickle
+import uvicorn
+
+# ... (keep all imports)
+# [I will keep the imports from the Read result]
+
 import pandas as pd
 import numpy as np
 import shap
@@ -217,3 +221,11 @@ def predict_delay(request: FlightRequest):
         "avg_route_risk": avg_route_risk,
         "avg_hour_risk": avg_hour_risk
     }
+
+if __name__ == "__main__":
+    # Railway provides the PORT environment variable.
+    # We MUST listen on 0.0.0.0 to be accessible externally.
+    port = int(os.environ.get("PORT", 8000))
+    print(f"🚀 Server starting on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
