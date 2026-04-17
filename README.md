@@ -9,71 +9,86 @@
 ---
 
 ## 🌟 The Mission
-Flight delays aren't just annoying—they cost the global economy billions. Most tools just tell you *that* a flight is delayed. **AeroMetric** does something different: it predicts the **probability of a delay** and explains **exactly why** it's happening.
+Flight delays aren't just annoying—they cost the global economy billions. Most tools just tell you *that* a flight is delayed. **AeroMetric** does something different: it predicts the **probability of a delay** and explains **exactly why** it's happening using Explainable AI (SHAP).
 
-I built this to demonstrate how to handle "Big Data" (5.8M+ records) on local hardware and transform it into a scalable, production-ready intelligence tool.
+I built this to demonstrate how to handle "Big Data" (5.8M+ records) on local hardware and transform it into a scalable, production-ready research platform.
 
-### 📸 Quick Preview
-* [Link to Live Demo] — *Experience the risk simulator in real-time.*
+### 📸 Project Preview
+![Aviation Intelligence Dashboard](./docs/assets/dashboard.png)
+*Caption: The AeroMetric HUD illustrating live delay probabilities, Radar-based risk factor mapping, and SHAP diagnostics against a modern airport backdrop.*
 
 ---
 
-## 🛠️ How it Works (The "Under the Hood")
+## 🧪 Research Methodology & Statistical Proofs
 
-AeroMetric isn't just a model; it's a full-stack ML pipeline designed for reliability and transparency.
+Instead of chasing raw accuracy, this project uses statistical validation to uncover the actual structural drivers of aviation risk.
 
-### 1. The Data Engine (Medallion Architecture)
-I processed over **5.8 million historical flights** using a three-tier pipeline:
-- **Bronze (Raw)**: Ingested massive CSV files from the BTS Aviation dataset.
-- **Silver (Optimized)**: Migrated to **Apache Parquet** and implemented **Memory Downcasting**. This reduced the memory footprint by 50% and increased load speeds by 10x.
-- **Gold (Features)**: Applied target encoding and temporal cycle encoding (sin/cos) to capture the "rhythm" of flight schedules.
+### Hypothesis Testing (Verified Results)
+| Hypothesis | Statistical Test | Result | P-Value | Conclusion |
+| :--- | :--- | :--- | :--- | :--- |
+| **H1: Time of Day** | Chi-Square | **Validated** | < 0.001 | Significant delay peak between 18:00 and 22:00. |
+| **H2: Airline Choice** | One-Way ANOVA | **Validated** | < 0.001 | Carrier performance is a structural, non-random driver. |
+| **H3: Distance** | Pearson Correlation| **Rejected** | 0.067 | Distance is a weak predictor of delay magnitude. |
 
-### 2. The ML Brain
-I chose **LightGBM** for its speed and ability to handle categorical data (Airports, Airlines) without exploding the feature space. 
-- **No Black Boxes**: I integrated **SHAP (Shapley Additive Explanations)**. When the model predicts a high risk, the dashboard tells you if it's because of the carrier, the hour of departure, or the route.
+---
 
-### 3. The Production Stack
-- **Backend**: A high-performance **FastAPI** server containerized with **Docker**.
-- **Frontend**: A premium, "Glassmorphism" UI built with **Next.js 15** and **Tailwind CSS**.
-- **Deployment**: A hybrid cloud approach using **Vercel** (Frontend) and **Railway/Render** (Backend).
+## 🏗️ ML Pipeline Architecture
+
+We implemented a **Medallion Architecture** to handle 5.8M+ records efficiently:
+
+```mermaid
+graph TD
+    A[Bronze: Raw CSVs] -->|PyArrow Ingestion| B[Silver: Optimized Parquet]
+    B -->|Type Downcasting| C[Gold: Research Dataset]
+    C -->|Stratified Sampling 500k| D[LightGBM Model]
+    D -->|SHAP Values| E[FastAPI REST API]
+    E -->|JSON HUD State| F[Next.js React Dashboard]
+```
+
+---
+
+## 🛠️ How it Works (Engineering Deep-Dive)
+
+### 1. Data Engineering at Scale
+*   **Parquet Migration**: Converted raw CSVs to Apache Parquet, reducing memory footprint by ~50% and increasing load speeds by 10x.
+*   **Memory Downcasting**: Systematically converted `float64` to `float32` and `int64` to `int16/int8`, enabling the 5.8M record dataset to fit into standard RAM.
+
+### 2. Advanced Feature Engineering
+*   **Temporal Periodicity**: Implemented **Sine/Cosine cyclic encoding** for departure times to capture the natural 24-hour cycle of aviation logistics.
+*   **High-Cardinality Mapping**: Applied **Target Encoding** to Airlines and Airports to transform categorical labels into actionable probability scores.
+
+### 3. Explainable ML (SHAP Diagnostics)
+AeroMetric uses **SHAP (Shapley Additive Explanations)** to decompose every live prediction. The "Risk Indicators" in the UI are not guesses—they are mathematical breakdowns of how specific variables (like a Spirit flight or a late-night departure) pushed the probability upward.
+
+---
+
+## 📉 Core Finding: The "LCC Reality Gap"
+
+Through deep error analysis of **False Negatives** (Unexpected Delays), we discovered a critical "Predictability Ceiling":
+> **Carrier Volatility:**
+> Low-cost carriers like **Spirit (NK)** and **Frontier (F9)** exhibit the highest "Miss Rates." Their tight operational models (minimal spare aircraft, tight turns) create a volatility that schedule data alone cannot predict—a core finding for future aviation research.
 
 ---
 
 ## 🚀 Get Started Locally
 
-### Prerequisites
-- Python 3.12+
-- Node.js 18+
-
-### Installation
-1. **Clone the repo**
+1. **Clone & Install**
    ```bash
    git clone https://github.com/your-username/aviation-project.git
    cd aviation-project
+   pip install -r requirements.txt
    ```
 
-2. **Run the Backend**
-   ```bash
-   cd backend
-   pip install -r ../requirements.txt
-   uvicorn api:app --reload
-   ```
-
-3. **Run the Frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+2. **Run the Engine**
+   - Backend: `cd backend && uvicorn api:app --reload`
+   - Frontend: `cd frontend && npm run dev`
 
 ---
 
-## 🎓 Engineering Key Takeaways
-- **Scale over Recency**: I intentionally used the 2015 dataset to process 5.8M rows. Handling this volume of data locally is a bigger engineering challenge than using a tiny modern dataset.
-- **Combatting the "COVID Anomaly"**: By using 2015 data, the model learns standard aviation patterns rather than the chaos of the 2020-2022 pandemic.
-- **Performance First**: By baking the optimized Parquet file into the Docker image, the API starts instantly without needing an external database.
+## 🎓 Key Portfolio Takeaways
+*   **Scale over Recency**: Handled 5.8M rows locally using optimized data typing.
+*   **Combatting the "COVID Anomaly"**: Strategically used 2015 data to learn standard aviation logistics, avoiding the "pandemic noise" of 2020-2022.
 
 ---
 
-**Developed with ❤️ by [Your Name]**  
-*Aspiring Data Scientist | ML Engineer*
+**Developed with ❤️ and Rigorous Data Science.**
