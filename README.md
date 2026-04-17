@@ -1,94 +1,100 @@
-# ✈️ AeroMetric: Aviation Intelligence Hub
-### *Predicting Flight Delays with Machine Learning & Production Engineering*
+# ✈️ AEROMETRIC
+### *Aviation Operational Research & Risk Modeling*
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
-[![LightGBM](https://img.shields.io/badge/LightGBM-ML-orange.svg)](https://lightgbm.readthedocs.io/)
+[![Operational-Research](https://img.shields.io/badge/Operational--Research-Analytics-blueviolet.svg)](https://en.wikipedia.org/wiki/Operations_research)
 
 ---
 
-## 🌟 The Mission
-Flight delays aren't just annoying—they cost the global economy billions. Most tools just tell you *that* a flight is delayed. **AeroMetric** does something different: it predicts the **probability of a delay** and explains **exactly why** it's happening using Explainable AI (SHAP).
+## 🌟 The Research Objective
+Flight delays are not random; they are the result of systemic operational bottlenecks. **AeroMetric** is a data science platform designed to move beyond simple tracking and instead identify the **structural drivers of aviation risk**.
 
-I built this to demonstrate how to handle "Big Data" (5.8M+ records) on local hardware and transform it into a scalable, production-ready research platform.
+The goal was to transform **5.8 million historical flight records** into a tool that doesn't just predict a delay, but mathematically explains the specific operational factors causing it.
 
-### 📸 Project Preview
+### 📸 The Intelligence Interface
 ![Aviation Intelligence Dashboard](./docs/assets/dashboard.png)
-*Caption: The AeroMetric HUD illustrating live delay probabilities, Radar-based risk factor mapping, and SHAP diagnostics against a modern airport backdrop.*
+*Caption: The AeroMetric HUD illustrating live risk probabilities, Radar-based feature mapping, and SHAP diagnostics against a modern airport backdrop.*
 
 ---
 
-## 🧪 Research Methodology & Statistical Proofs
+## 🧪 The Scientific Approach
 
-Instead of chasing raw accuracy, this project uses statistical validation to uncover the actual structural drivers of aviation risk.
+True data science starts with a question, not a model. Before building the predictive engine, I conducted a rigorous statistical investigation to validate the drivers of delay.
 
-### Hypothesis Testing (Verified Results)
+### Hypothesis Testing & Statistical Proofs
 | Hypothesis | Statistical Test | Result | P-Value | Conclusion |
 | :--- | :--- | :--- | :--- | :--- |
-| **H1: Time of Day** | Chi-Square | **Validated** | < 0.001 | Significant delay peak between 18:00 and 22:00. |
-| **H2: Airline Choice** | One-Way ANOVA | **Validated** | < 0.001 | Carrier performance is a structural, non-random driver. |
-| **H3: Distance** | Pearson Correlation| **Rejected** | 0.067 | Distance is a weak predictor of delay magnitude. |
+| **H1: Time of Day** | Chi-Square | **Validated** | < 0.001 | Significant delay peaks during evening rotations (18:00-22:00) due to cascading disruptions. |
+| **H2: Airline Choice** | One-Way ANOVA | **Validated** | < 0.001 | Carrier performance is a structural, non-random driver of operational risk. |
+| **H3: Distance** | Pearson Correlation| **Rejected** | 0.067 | Flight distance is a weak predictor of delay magnitude. |
 
 ---
 
-## 🏗️ ML Pipeline Architecture
+## 🏗️ System Architecture
 
-We implemented a **Medallion Architecture** to handle 5.8M+ records efficiently:
+To bridge the gap between "Big Data" and a "Real-time UI," I implemented a **Medallion Data Architecture**. This ensures the data is refined from raw noise into actionable intelligence.
 
 ```mermaid
 graph TD
-    A[Bronze: Raw CSVs] -->|PyArrow Ingestion| B[Silver: Optimized Parquet]
-    B -->|Type Downcasting| C[Gold: Research Dataset]
-    C -->|Stratified Sampling 500k| D[LightGBM Model]
-    D -->|SHAP Values| E[FastAPI REST API]
-    E -->|JSON HUD State| F[Next.js React Dashboard]
+    A[Bronze: Raw BTS CSVs] -->|PyArrow Ingestion| B[Silver: Optimized Parquet]
+    B -->|Memory Downcasting| C[Gold: Feature Engineered Dataset]
+    C -->|Stratified Sampling| D[Statistical Model]
+    D -->|SHAP Value Decomposition| E[FastAPI REST API]
+    E -->|JSON State Sync| F[Next.js React Dashboard]
 ```
 
 ---
 
-## 🛠️ How it Works (Engineering Deep-Dive)
+## 🛠️ Engineering Struggles & Solutions
 
-### 1. Data Engineering at Scale
-*   **Parquet Migration**: Converted raw CSVs to Apache Parquet, reducing memory footprint by ~50% and increasing load speeds by 10x.
-*   **Memory Downcasting**: Systematically converted `float64` to `float32` and `int64` to `int16/int8`, enabling the 5.8M record dataset to fit into standard RAM.
+Handling 5.8 million records on local hardware presented significant technical hurdles. Here is how I solved them:
 
-### 2. Advanced Feature Engineering
-*   **Temporal Periodicity**: Implemented **Sine/Cosine cyclic encoding** for departure times to capture the natural 24-hour cycle of aviation logistics.
-*   **High-Cardinality Mapping**: Applied **Target Encoding** to Airlines and Airports to transform categorical labels into actionable probability scores.
+### 1. The Memory Wall (OOM Errors)
+Loading the full dataset caused immediate `Out-of-Memory` crashes.
+- **The Solution**: I migrated from CSV to **Apache Parquet**, reducing the disk footprint and increasing I/O speed by 10x. I then implemented **Memory Downcasting**, converting `float64` to `float32` and `int64` to `int16`, allowing the entire dataset to reside in RAM without precision loss.
 
-### 3. Explainable ML (SHAP Diagnostics)
-AeroMetric uses **SHAP (Shapley Additive Explanations)** to decompose every live prediction. The "Risk Indicators" in the UI are not guesses—they are mathematical breakdowns of how specific variables (like a Spirit flight or a late-night departure) pushed the probability upward.
+### 2. High-Cardinality Noise
+With hundreds of airports and dozens of airlines, traditional one-hot encoding would have created a "sparse matrix" that would crash most models.
+- **The Solution**: I applied **Target Encoding**, mapping each airport/airline to its historical probability of delay. This compressed the data while preserving its predictive power.
+
+### 3. The "Black Box" Problem
+Standard ML models provide a number, but not a reason.
+- **The Solution**: I integrated **SHAP (Shapley Additive Explanations)**. This decomposes every single prediction into a set of "contributions," showing exactly how much a specific carrier or a specific hour pushed the risk score up or down.
 
 ---
 
 ## 📉 Core Finding: The "LCC Reality Gap"
 
-Through deep error analysis of **False Negatives** (Unexpected Delays), we discovered a critical "Predictability Ceiling":
-> **Carrier Volatility:**
-> Low-cost carriers like **Spirit (NK)** and **Frontier (F9)** exhibit the highest "Miss Rates." Their tight operational models (minimal spare aircraft, tight turns) create a volatility that schedule data alone cannot predict—a core finding for future aviation research.
+Through a deep residual analysis of **False Negatives**, I uncovered a critical industry insight:
+> **The Volatility Ceiling:**
+> Low-cost carriers (LCCs) like **Spirit (NK)** and **Frontier (F9)** exhibit a higher "Miss Rate" in predictions. Their hyper-efficient operational models (minimal spare aircraft, tight turns) create a level of volatility that schedule data alone cannot capture—a key finding for future operational research.
 
 ---
 
-## 🚀 Get Started Locally
+## 🚀 Deployment & Local Setup
 
-1. **Clone & Install**
+### Prerequisites
+- Python 3.12+
+- Node.js 18+
+
+### Installation
+1. **Clone & Setup**
    ```bash
-   git clone https://github.com/your-username/aviation-project.git
-   cd aviation-project
+   git clone https://github.com/your-username/aerometric.git
+   cd aerometric
    pip install -r requirements.txt
    ```
 
-2. **Run the Engine**
+2. **Execution**
    - Backend: `cd backend && uvicorn api:app --reload`
    - Frontend: `cd frontend && npm run dev`
 
 ---
 
-## 🎓 Key Portfolio Takeaways
-*   **Scale over Recency**: Handled 5.8M rows locally using optimized data typing.
-*   **Combatting the "COVID Anomaly"**: Strategically used 2015 data to learn standard aviation logistics, avoiding the "pandemic noise" of 2020-2022.
+## 🎓 Final Takeaways
+- **Scale over Recency**: Prioritizing the processing of 5.8M rows over a smaller modern dataset to demonstrate engineering maturity.
+- **Integrity over Accuracy**: Focusing on **PR-AUC** and **SHAP values** to ensure the model is interpretable and scientifically sound.
 
----
-
-**Developed with ❤️ and Rigorous Data Science.**
+**Developed with ❤️ and Rigorous Data Science Thinking.**
