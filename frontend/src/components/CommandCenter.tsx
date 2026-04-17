@@ -66,6 +66,15 @@ export default function CommandCenter({ setPredictionData, setIsLoading, isLoadi
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const payload = {
+        month: form.month,
+        day_of_week: form.day_of_week,
+        airline: form.airline,
+        origin_airport: form.origin_airport,
+        destination_airport: form.destination_airport,
+        scheduled_departure: toMilitary(form.departure_minutes),
+        distance: form.distance
+      };
       const res = await axios.post(`${apiUrl}/predict`, payload);
       setPredictionData(res.data);
     } catch (e: any) {
