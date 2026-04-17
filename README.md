@@ -1,5 +1,5 @@
-# ✈️ AeroMetric: Aviation Operational Research & Risk Modeling
-### *A Technical Case Study in Big Data Engineering and Predictive Analytics*
+# ✈️ AeroMetric: Flight Delay Predictor
+### *A Data Science project to understand and predict flight delays*
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
@@ -8,90 +8,66 @@
 
 ---
 
-## 🎯 Project Objective
-The goal of AeroMetric was to transition from simple "flight tracking" to **predictive operational research**. The core challenge was to process **5.8 million historical flight records** on local hardware to identify the structural drivers of delays and deploy a real-time "Risk Intelligence" dashboard.
+## 🌟 What is this project?
+AeroMetric is a tool that predicts the probability of a flight being delayed. Instead of just giving a "Yes" or "No" answer, it explains the reasons behind the prediction—such as the airline's history or the time of departure.
 
-### 📸 System Preview
+I built this to practice handling a large dataset (5.8 million flights) and to create a user-friendly dashboard where anyone can test a flight route.
+
+### 📸 Dashboard Preview
 ![AeroMetric Dashboard](./docs/assets/dashboard.png)
-*The AeroMetric HUD: Integrating real-time probability scoring with SHAP-based feature decomposition.*
+*A simple interface to enter flight details and see the risk analysis in real-time.*
 
 ---
 
-## 🏗️ System Architecture
-The project follows a decoupled hybrid architecture, separating the heavy-lift data science pipeline from the high-performance user interface.
+## 🏗️ How it Works
 
+The project is split into two main parts: a **Backend** that does the math and a **Frontend** that shows the results.
+
+### The System Flow
 ```mermaid
-graph TD
-    subgraph "Data Engineering (The Lab)"
-        A[Raw BTS CSVs] -->|PyArrow Ingestion| B[Silver: Optimized Parquet]
-        B -->|Type Downcasting| C[Gold: Feature Dataset]
-        C -->|Stratified Sampling| D[LightGBM Model]
-    end
-
-    subgraph "Production API (The Brain)"
-        D -->|Pickle Serialization| E[FastAPI Server]
-        E -->|SHAP Explainer| F[Feature Impact Analysis]
-    end
-
-    subgraph "User Interface (The HUD)"
-        F -->|JSON State| G[Next.js 15 Frontend]
-        G -->|User Input| E
-    end
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style D fill:#bbf,stroke:#333,stroke-width:2px
-    style G fill:#dfd,stroke:#333,stroke-width:2px
+graph LR
+    A[Raw Data] --> B[Cleaned Data]
+    B --> C[ML Model]
+    C --> D[FastAPI Server]
+    D --> E[React Dashboard]
 ```
 
----
-
-## 🛠️ Technical Deep-Dive
-
-### 1. Overcoming the "Memory Wall"
-Processing 5.8M rows often leads to `Out-Of-Memory (OOM)` crashes on standard machines. I implemented two critical optimizations to ensure stability:
-- **Apache Parquet Migration**: Replaced CSVs with Parquet. This reduced the memory footprint by ~50% and increased I/O speeds by 10x.
-- **Bit-Optimized Downcasting**: Systematically converted `float64` to `float32` and `int64` to `int16/int8`. This allowed the entire processed dataset to reside in RAM, enabling near-instant training and inference.
-
-### 2. Feature Engineering & Domain Logic
-To capture the "rhythm" of aviation logistics, I implemented:
-- **Temporal Periodicity**: Used **Sine/Cosine cyclic encoding** for departure times. Since 23:59 is physically close to 00:01, linear integers fail; cyclic encoding preserves this circular relationship.
-- **Target Encoding**: Managed high-cardinality categorical data (hundreds of airports) by mapping them to their historical probability of delay, preventing the "dimensionality explosion" of one-hot encoding.
-
-### 3. Explainable AI (XAI) with SHAP
-Accuracy is useless without trust. I integrated **SHAP (Shapley Additive Explanations)** to move beyond "Black Box" predictions.
-- **The Logic**: For every prediction, the system calculates the exact contribution of each feature.
-- **The Result**: The UI doesn't just say "High Risk"; it specifies that the risk is high *because* of the specific Carrier and the Departure Hour.
+### What I did to make it work:
+1.  **Data Cleaning**: I started with 5.8 million rows of data. To make it run fast on a normal computer, I converted the files to **Parquet** format and optimized the data types to save memory.
+2.  **The Model**: I used **LightGBM**, a powerful tool for tabular data. It's fast and handles categories (like Airport codes) very well.
+3.  **The "Why" (Explainability)**: I used **SHAP values**. This allows the app to say, *"This flight is risky because it's a late-night departure,"* making the AI easier to trust.
+4.  **The App**: I built a fast API using **FastAPI** and a modern, clean dashboard using **Next.js**.
 
 ---
 
-## 🧪 Statistical Validation
-Before modeling, I used rigorous hypothesis testing to ensure the model was learning real patterns, not noise.
+## 🧪 What I Discovered (Data Insights)
 
-| Hypothesis | Statistical Test | Result | P-Value | Engineering Conclusion |
-| :--- | :--- | :--- | :--- | :--- |
-| **Time of Day** | Chi-Square | ✅ Validated | $< 0.001$ | Structural peaks occur between 18:00-22:00. |
-| **Airline Choice** | One-Way ANOVA | ✅ Validated | $< 0.001$ | Carrier choice is a primary driver of risk. |
-| **Distance** | Pearson Corr. | ❌ Rejected | $0.067$ | Distance is an insignificant predictor of delay. |
+Before building the model, I tested a few ideas to see what actually causes delays:
 
-### 📉 The "LCC Volatility" Discovery
-Through residual analysis of **False Negatives**, I identified a "Predictability Ceiling." Low-Cost Carriers (e.g., Spirit, Frontier) show significantly higher volatility. Their lean operational models create disruptions that schedule-based data alone cannot predict—a key finding for future research.
+- **Time of Day**: I found that flights departing between **6 PM and 10 PM** have a much higher risk of delay.
+- **The Airline**: Some airlines are consistently more punctual than others, regardless of the route.
+- **Distance**: Surprisingly, the distance of the flight didn't have a strong impact on whether it would be delayed.
+
+**Key Finding**: I noticed that low-cost carriers (like Spirit or Frontier) are harder to predict. Their tight schedules mean a small problem can cause a big delay very quickly.
 
 ---
 
-## 🚀 Deployment Stack
-- **Backend**: FastAPI $\rightarrow$ Docker $\rightarrow$ Railway/Render (CaaS).
-- **Frontend**: Next.js 15 $\rightarrow$ Vercel (Edge).
-- **Reliability**: Implemented a `/health` heartbeat monitor to prevent "Cold Start" latency on free-tier hosting.
+## 🚀 How to run it locally
 
-### Local Execution
+### 1. Setup the Backend
 ```bash
-# Backend
-cd backend && pip install -r ../requirements.txt && uvicorn api:app --reload
+cd backend
+pip install -r ../requirements.txt
+uvicorn api:app --reload
+```
 
-# Frontend
-cd frontend && npm install && npm run dev
+### 2. Setup the Frontend
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ---
 
-**Developed with a focus on Rigorous Data Science and Production Engineering.**
+**Created as a learning project in Data Science and Full-Stack Engineering.**
