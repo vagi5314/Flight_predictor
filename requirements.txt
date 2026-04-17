@@ -1,0 +1,14 @@
+pandas
+numpy
+scikit-learn
+lightgbm
+pyarrow
+fastparquet
+streamlit
+shap
+matplotlib
+seaborn
+jupyter
+fastapi
+uvicorn
+pydantic
