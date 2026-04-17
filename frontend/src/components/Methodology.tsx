@@ -3,8 +3,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, ShieldAlert, Zap, Cpu, HelpCircle } from 'lucide-react';
 
-export default function Methodology() {
+export default function Methodology({ techStats }: { techStats?: any }) {
   const pipeline = [
+
     { step: "1. Bronze Layer (Raw)", tech: "BTS Aviation Data", desc: "Ingested 5.8M+ raw historical data records directly from the Bureau of Transportation Statistics (BTS)." },
     { step: "2. Silver Layer (Optimized)", tech: "500k Stratified Sample", desc: "Applied stratified sampling to perfectly maintain the original delay distribution while optimizing for iteration speed and memory." },
     { step: "3. Gold Layer (Features)", tech: "Medallion Architecture", desc: "Nulls stripped, temporal cycles encoded, and heavy categorical variables target-encoded into production-ready Parquet." },
