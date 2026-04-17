@@ -66,7 +66,7 @@ export default function CompetitiveIntelligence() {
                                 width={50} 
                                 axisLine={false} 
                                 tickLine={false} 
-                                tick={{fontSize: 12, fontWeight: 'black', fill: '#f8fafc', italic: true, fontFamily: 'monospace'}} 
+                                tick={{fontSize: 12, fontWeight: 'black', fill: '#f8fafc', fontFamily: 'monospace'}}
                             />
                             <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(255, 255, 255, 0.02)'}} />
                             <Bar dataKey="risk" radius={[0, 12, 12, 0]} barSize={28}>
