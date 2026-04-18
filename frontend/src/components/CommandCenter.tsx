@@ -74,7 +74,7 @@ export default function CommandCenter({ setPredictionData, setIsLoading, isLoadi
         scheduled_departure: toMilitary(form.departure_minutes),
         distance: form.distance
       };
-      const res = await axios.post(`https://flightpredictor-production.up.railway.app/predict`, payload);
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/predict`, payload);
       setPredictionData(res.data);
     } catch (e: any) {
       if (e.response?.status === 503) {
