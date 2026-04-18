@@ -74,7 +74,7 @@ class FlightRequest(BaseModel):
     scheduled_departure: int
     distance: int
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {
         "status": "online",
@@ -82,14 +82,14 @@ def health_check():
         "data_loaded": 'global_chart_data' in ml_data
     }
 
-@app.get("/analytics/global")
+@app.api_route("/analytics/global", methods=["GET", "HEAD"])
 def get_global_analytics():
     return {
         "hourly_chart": ml_data.get('global_chart_data', []),
         "tech_stats": ml_data.get('tech_stats', {})
     }
 
-@app.get("/analytics/airlines")
+@app.api_route("/analytics/airlines", methods=["GET", "HEAD"])
 def get_airline_analytics():
     return {"airline_chart": ml_data.get('airline_data', [])}
 
