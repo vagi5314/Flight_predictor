@@ -53,9 +53,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Aviation Intelligence API", lifespan=lifespan)
 
+# IRONCLAD CORS CONFIGURATION
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "*",
+        "https://flight-predictor-4z38.vercel.app",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
