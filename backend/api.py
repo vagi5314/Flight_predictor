@@ -13,8 +13,6 @@ ml_data = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # FAST-START IMPLEMENTATION
-    # We minimize loading here to ensure the health check passes immediately
     model_path = '/app/app/lgbm_model.pkl'
     parquet_path = '/app/data/processed/flights_optimized.parquet'
 
@@ -34,12 +32,18 @@ async def lifespan(app: FastAPI):
     try:
         if os.path.exists(parquet_path):
             df = pd.read_parquet(parquet_path)
+
+            # CRITICAL: Create the HOUR column to prevent KeyError in /predict
+            if 'SCHEDULED_DEPARTURE' in df.columns:
+                df['HOUR'] = (df['SCHEDULED_DEPARTURE'] // 100).clip(0, 23)
+            else:
+                df['HOUR'] = 0
+
             ml_data['loaded_df'] = df
-            # Precompute minimal stats for health check/basic UI
             ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
             ml_data['airline_data'] = [{"carrier": c, "risk": 20.0} for c in ['AA', 'DL', 'UA', 'WN', 'AS', 'NK', 'B6']]
             ml_data['tech_stats'] = {"rows_processed": "Optimized", "optimization": "Active", "model": "LightGBM"}
-            print("✅ Data basic load complete")
+            print("✅ Data loaded and HOUR column created")
         else:
             print("⚠️ WARNING: flights_optimized.parquet missing. Using synthetic fallbacks.")
             ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
@@ -53,7 +57,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Aviation Intelligence API", lifespan=lifespan)
 
-# IRONCLAD CORS CONFIGURATION
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
