@@ -75,6 +75,22 @@ Through statistical analysis (Chi-Square and ANOVA), the following operational d
 - **LCC Volatility**: Low-cost carriers (e.g., Spirit, Frontier) exhibit higher "Miss Rates," suggesting a predictability ceiling due to tighter operational turnarounds.
 
 ---
+ 
+## 🛠️ The Engineering Journey: Challenges & Resolutions
+
+Building a production-ready ML system revealed several critical bottlenecks. Below is the technical breakdown of the hurdles overcome during development.
+
+### 📊 Data Science & ML Hurdles
+- **The Scale Problem**: Handling 5.8M records caused immediate memory overflows. I resolved this by implementing **Apache Parquet** for storage and **Type Downcasting**, reducing the memory footprint by ~70% without losing precision.
+- **Dimensionality Explosion**: With hundreds of airports, one-hot encoding would have created a sparse matrix too large for efficient training. I implemented **Target Encoding** to compress this high-cardinality data into meaningful risk coefficients.
+- **The "Black Box" Dilemma**: A raw probability score is useless for operational decision-making. I integrated **SHAP (Shapley Additive Explanations)** to provide feature-level transparency, transforming the model from a "predictor" into a "diagnostic tool."
+
+### ⚙️ Systems & Deployment Hurdles
+- **The "Container Wall"**: Initial Docker deployments failed due to pathing mismatches between the local OS and the Linux container. I resolved this by implementing absolute pathing and a root-context build strategy in the `Dockerfile`.
+- **CORS & Gateway Deadlocks**: Connecting a Vercel frontend to a Railway backend triggered strict browser CORS policies. I solved this by configuring a stateless CORS middleware with `allow_credentials=False`, enabling seamless communication across dynamic Vercel preview domains.
+- **Startup Latency (Cold Starts)**: Loading the model and dataset caused Railway health checks to timeout. I implemented a **Fast-Start Lifespan** pattern, allowing the server to bind to the port instantly and load heavy assets in the background.
+
+---
 
 ## 🚀 Local Setup
 
