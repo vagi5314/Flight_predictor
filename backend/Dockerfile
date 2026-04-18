@@ -15,7 +15,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Railway uses the PORT environment variable
-EXPOSE 8000
-
-# Use the path relative to the build context root
 CMD ["python", "backend/api.py"]
