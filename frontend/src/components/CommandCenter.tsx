@@ -82,7 +82,7 @@ export default function CommandCenter({ setPredictionData, setIsLoading, isLoadi
       } else if (e.response?.status === 400) {
         setError(e.response.data.detail || "Invalid flight configuration.");
       } else {
-        setError("Can't connect to the backend. Make sure the server is running on port 8000.");
+        setError("Unable to connect to the Aviation Intelligence API. Please check your connection or try again later.");
       }
     } finally {
       setIsLoading(false);
