@@ -15,4 +15,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Railway uses the PORT environment variable
+EXPOSE 8080
 CMD ["python", "backend/api.py"]
