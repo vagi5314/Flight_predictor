@@ -226,6 +226,9 @@ if __name__ == "__main__":
     # Railway provides the PORT environment variable.
     # We MUST listen on 0.0.0.0 to be accessible externally.
     port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 Server starting on port {port}...")
+    print(f"--- STARTUP DEBUG ---")
+    print(f"Environment PORT: {os.environ.get('PORT')}")
+    print(f"Final bound port: {port}")
+    print(f"🚀 Server starting on port {port} at 0.0.0.0...")
     uvicorn.run(app, host="0.0.0.0", port=port)
 
