@@ -17,5 +17,5 @@ COPY . .
 # Railway uses the PORT environment variable
 EXPOSE 8000
 
-# Use the absolute path to ensure the file is found
-CMD ["python", "/app/api.py"]
+# Use the path relative to the build context root
+CMD ["python", "backend/api.py"]
