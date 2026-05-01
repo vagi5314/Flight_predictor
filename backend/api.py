@@ -13,8 +13,10 @@ ml_data = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    model_path = '/app/app/lgbm_model.pkl'
-    parquet_path = '/app/data/processed/flights_optimized.parquet'
+    # Use relative paths from project root
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model_path = os.path.join(base_dir, 'app', 'lgbm_model.pkl')
+    parquet_path = os.path.join(base_dir, 'data', 'processed', 'flights_optimized.parquet')
 
     print("🚀 INITIALIZING FAST-START MODE...")
 
@@ -169,7 +171,7 @@ def predict_delay(request: FlightRequest):
     }
 
 if __name__ == "__main__":
-    port = 8080
-    print(f"--- FORCED PORT STARTUP ---")
+    port = int(os.environ.get("PORT", 8080))
+    print(f"--- DYNAMIC PORT STARTUP ---")
     print(f"🚀 Server starting on port {port} at 0.0.0.0...")
     uvicorn.run(app, host="0.0.0.0", port=port)
