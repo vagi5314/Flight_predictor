@@ -1,0 +1,59 @@
+.git
+.gitignore
+.github
+.claude
+.graphify*
+.graphify-out
+
+# Frontend (FastAPI backend, not Next.js)
+frontend/
+frontend/**/
+**/node_modules
+**/.next
+**/.vercel
+**/.env
+**/.env.*
+**/coverage
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# Notebooks / research
+notebooks/
+research/
+docs/
+
+# Large data (keep only what's needed at runtime)
+data/raw/
+data/processed/
+
+# Logs
+*.log
+backend_log.txt
+frontend/frontend*.log
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.pem
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/

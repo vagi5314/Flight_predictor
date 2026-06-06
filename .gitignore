@@ -16,14 +16,12 @@ data/raw/*.csv
 data/processed/*.parquet
 !data/processed/error_analysis_report.md
 
-# Model
-app/lgbm_model.pkl
-
 # Next.js / Frontend
 frontend/node_modules/
 frontend/.next/
+frontend/.env
 frontend/.env*.local
-frontend/frontend.log
+frontend/frontend*.log
 frontend/public/build/
 frontend/out/
 frontend/build/
@@ -50,4 +48,8 @@ Thumbs.db
 .claude/
 CLAUDE.md
 AGENTS.md
+
+# Graphify skill output
+graphify-out/
+graphify-out/**
 
