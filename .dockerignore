@@ -26,8 +26,11 @@ notebooks/
 research/
 docs/
 
-# Large data — keep the parquet the model needs; drop raw inputs
+# Large data — drop raw inputs and the legacy optimized parquet (the
+# running app loads app/lgbm_model.pkl and data/processed/aggregates.json,
+# never the parquet). Saves ~56 MB from every Render build context.
 data/raw/
+data/processed/flights_optimized.parquet
 
 # Logs
 *.log
