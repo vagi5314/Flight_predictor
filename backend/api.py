@@ -68,7 +68,22 @@ async def lifespan(app: FastAPI):
     ml_data.clear()
 
 
-app = FastAPI(title="Aviation Intelligence API", lifespan=lifespan)
+app = FastAPI(
+    title="Aviation Intelligence API",
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
+
+
+@app.middleware("http")
+async def strip_proxy_headers(request, call_next):
+    response = await call_next(request)
+    response.headers.pop("x-render-origin-server", None)
+    response.headers.pop("x-render-internal-only", None)
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,
