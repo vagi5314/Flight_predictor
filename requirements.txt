@@ -3,7 +3,7 @@ numpy==1.26.4
 scikit-learn==1.5.2
 lightgbm==4.6.0
 pyarrow==18.1.0
-fastparquet==2024.5.0
+fastparquet==2026.5.0
 streamlit==1.40.2
 shap==0.46.0
 matplotlib==3.10.0
