@@ -80,8 +80,9 @@ app = FastAPI(
 @app.middleware("http")
 async def strip_proxy_headers(request, call_next):
     response = await call_next(request)
-    response.headers.pop("x-render-origin-server", None)
-    response.headers.pop("x-render-internal-only", None)
+    for header in ("x-render-origin-server", "x-render-internal-only"):
+        if header in response.headers:
+            del response.headers[header]
     return response
 
 
