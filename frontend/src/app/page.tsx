@@ -44,10 +44,10 @@ export default function AeroMetricGlass() {
     <div className="relative min-h-screen text-slate-100 font-sans selection:bg-white/20">
       
       {/* Dynamic Background Image Layer */}
-      <div 
+      <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-        style={{ 
-          backgroundImage: 'url("https://images.unsplash.com/photo-1473862170180-84427c485aca?q=80&w=2000&auto=format&fit=crop")',
+        style={{
+          backgroundImage: 'url("/bg-takeoff.jpg")',
         }}
       >
         {/* Architectural Overlays: Neutralizing interior lighting to prioritize UI focus */}
