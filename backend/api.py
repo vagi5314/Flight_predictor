@@ -4,9 +4,9 @@ import os
 import pickle
 import numpy as np
 import shap
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
 
 ml_data = {}
@@ -86,6 +86,22 @@ async def strip_proxy_headers(request, call_next):
     return response
 
 
+@app.middleware("http")
+async def limit_request_size(request: Request, call_next):
+    cl = request.headers.get("content-length")
+    if cl:
+        try:
+            if int(cl) > 4096:
+                return Response(
+                    status_code=413,
+                    content='{"detail":"Request body too large (max 4 KB)."}',
+                    media_type="application/json",
+                )
+        except ValueError:
+            pass
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -98,9 +114,9 @@ app.add_middleware(
 class FlightRequest(BaseModel):
     month: int
     day_of_week: int
-    airline: str
-    origin_airport: str
-    destination_airport: str
+    airline: str = Field(..., min_length=1, max_length=8)
+    origin_airport: str = Field(..., min_length=1, max_length=8)
+    destination_airport: str = Field(..., min_length=1, max_length=8)
     scheduled_departure: int
     distance: int
 

@@ -9,6 +9,8 @@ def run_sampling():
     print(f"Reading: {input_path}")
     if not os.path.exists(input_path):
         print("Error: Input file not found.")
+        print("Note: flights_optimized.parquet is intentionally not in git (59 MB).")
+        print("See data/processed/README.md for how to obtain or regenerate it.")
         return
 
     try:

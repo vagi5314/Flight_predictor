@@ -36,7 +36,7 @@ model_path = os.path.join(base_dir, 'app', 'lgbm_model.pkl')
 parquet_path = os.path.join(base_dir, 'data', 'processed', 'flights_optimized.parquet')
 
 print(f"Model Path: {model_path} -> {'Found' if os.path.exists(model_path) else 'Missing'}")
-print(f"Data Path: {parquet_path} -> {'Found' if os.path.exists(parquet_path) else 'Missing'}")
+print(f"Data Path: {parquet_path} -> {'Found' if os.path.exists(parquet_path) else 'Missing (expected on fresh clones; see data/processed/README.md)'}")
 
 print("\n--- Model Load Test ---")
 try:
