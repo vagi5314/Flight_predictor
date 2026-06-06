@@ -26,9 +26,8 @@ notebooks/
 research/
 docs/
 
-# Large data (keep only what's needed at runtime)
+# Large data — keep the parquet the model needs; drop raw inputs
 data/raw/
-data/processed/
 
 # Logs
 *.log
