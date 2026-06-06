@@ -6,7 +6,7 @@ pyarrow==18.1.0
 fastparquet==2024.5.0
 streamlit==1.40.2
 shap==0.46.0
-matplotlib==3.10.0
+matplotlib==3.10.9
 seaborn==0.13.2
 jupyter==1.1.1
 fastapi==0.115.6
