@@ -28,7 +28,8 @@ export default function AeroMetricGlass() {
 
   useEffect(() => {
     const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://flightpredictor-production.up.railway.app';
-    const secureUrl = rawUrl.replace(/^http:\/\//i, 'https://');
+    const isLocal = /localhost|127\.0\.0\.1/.test(rawUrl);
+    const secureUrl = isLocal ? rawUrl : rawUrl.replace(/^http:\/\//i, 'https://');
     
     axios.get(`${secureUrl}/analytics/global`).then(res => {
       setTechStats(res.data.tech_stats);
