@@ -1,9 +1,9 @@
 import uvicorn
-import pandas as pd
-import numpy as np
-import shap
+import json
 import os
 import pickle
+import numpy as np
+import shap
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -11,77 +11,62 @@ from contextlib import asynccontextmanager
 
 ml_data = {}
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Use relative paths from project root
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     model_path = os.path.join(base_dir, 'app', 'lgbm_model.pkl')
-    parquet_path = os.path.join(base_dir, 'data', 'processed', 'flights_optimized.parquet')
+    aggregates_path = os.path.join(base_dir, 'data', 'processed', 'aggregates.json')
 
-    print("🚀 INITIALIZING FAST-START MODE...")
+    print("[startup] INITIALIZING FAST-START MODE...")
 
     try:
         if os.path.exists(model_path):
             with open(model_path, 'rb') as f:
                 ml_data['delay_model'] = pickle.load(f)
                 ml_data['explainer'] = shap.TreeExplainer(ml_data['delay_model'])
-                print("✅ Model loaded successfully")
+            print("[startup] Model + SHAP explainer loaded")
         else:
-            print("⚠️ WARNING: lgbm_model.pkl missing. Using synthetic fallbacks.")
+            print("[startup] WARNING: lgbm_model.pkl missing. /predict will return 503.")
     except Exception as e:
-        print(f"❌ Model Load Error: {e}")
+        print(f"[startup] Model Load Error: {e}")
 
     try:
-        if os.path.exists(parquet_path):
-            df = pd.read_parquet(parquet_path)
-
-            # CRITICAL: Create the HOUR column to prevent KeyError in /predict
-            if 'SCHEDULED_DEPARTURE' in df.columns:
-                df['HOUR'] = (df['SCHEDULED_DEPARTURE'] // 100).clip(0, 23)
-            else:
-                df['HOUR'] = 0
-
-            ml_data['loaded_df'] = df
-
-            # Compute real aggregates from the parquet so the dashboard reflects actual data
-            if 'is_delayed' in df.columns:
-                hourly_rates = df.groupby('HOUR', observed=True)['is_delayed'].mean() * 100
-                ml_data['global_chart_data'] = [
-                    {"time": f"{int(h):02d}:00", "system_delay_rate": round(float(rate), 1)}
-                    for h, rate in hourly_rates.items()
-                ]
-                present = {entry["time"]: entry["system_delay_rate"] for entry in ml_data['global_chart_data']}
-                ml_data['global_chart_data'] = [
-                    {"time": f"{h:02d}:00", "system_delay_rate": present.get(f"{h:02d}:00", 0.0)}
-                    for h in range(24)
-                ]
-
-                airline_rates = df.groupby('AIRLINE', observed=True)['is_delayed'].mean().sort_values(ascending=False) * 100
-                ml_data['airline_data'] = [
-                    {"carrier": str(carrier), "risk": round(float(rate), 1)}
-                    for carrier, rate in airline_rates.items()
-                ]
-            else:
-                # Parquet loaded but lacks the target column; keep synthetic so the API stays consistent
-                ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
-                ml_data['airline_data'] = [{"carrier": c, "risk": 20.0} for c in ['AA', 'DL', 'UA', 'WN', 'AS', 'NK', 'B6']]
-
+        if os.path.exists(aggregates_path):
+            with open(aggregates_path) as f:
+                agg = json.load(f)
+            present_hourly = agg.get('hourly', {})
+            ml_data['global_chart_data'] = [
+                {"time": f"{h:02d}:00", "system_delay_rate": present_hourly.get(f"{h:02d}:00", 0.0)}
+                for h in range(24)
+            ]
+            ml_data['airline_data'] = [
+                {"carrier": c, "risk": r}
+                for c, r in agg.get('airline', {}).items()
+            ]
+            ml_data['route_lookup'] = agg.get('route', {})
+            row_count = agg.get('row_count', 0)
             ml_data['tech_stats'] = {
-                "rows_processed": f"{len(df):,}",
-                "optimization": "Parquet + Type Downcasting",
+                "rows_processed": f"{row_count:,}",
+                "optimization": "Pre-computed Aggregates (memory-light)",
                 "model": "LightGBM"
             }
-            print(f"✅ Data loaded: {len(df):,} rows; HOUR column ready; real hourly + airline aggregates computed")
+            print(f"[startup] Aggregates loaded: {row_count:,} source rows; "
+                  f"{len(ml_data['route_lookup']):,} routes; "
+                  f"{len(ml_data['airline_data'])} carriers")
         else:
-            print("⚠️ WARNING: flights_optimized.parquet missing. Using synthetic fallbacks.")
+            print("[startup] WARNING: aggregates.json missing. Analytics will return synthetic data.")
             ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
-            ml_data['airline_data'] = [{"carrier": c, "risk": 20.0} for c in ['AA', 'DL', 'UA', 'WN', 'AS', 'NK', 'B6']]
+            ml_data['airline_data'] = [{"carrier": c, "risk": 20.0}
+                                       for c in ['AA', 'DL', 'UA', 'WN', 'AS', 'NK', 'B6']]
+            ml_data['route_lookup'] = {}
             ml_data['tech_stats'] = {"rows_processed": "Simulated", "optimization": "Enabled", "model": "LightGBM"}
     except Exception as e:
-        print(f"❌ Analytics Calc Error: {e}")
+        print(f"[startup] Aggregates Load Error: {e}")
 
     yield
     ml_data.clear()
+
 
 app = FastAPI(title="Aviation Intelligence API", lifespan=lifespan)
 
@@ -93,6 +78,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class FlightRequest(BaseModel):
     month: int
     day_of_week: int
@@ -102,13 +88,16 @@ class FlightRequest(BaseModel):
     scheduled_departure: int
     distance: int
 
+
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {
         "status": "online",
         "model_loaded": 'delay_model' in ml_data,
-        "data_loaded": 'global_chart_data' in ml_data
+        "data_loaded": 'global_chart_data' in ml_data,
+        "routes_cached": len(ml_data.get('route_lookup', {}))
     }
+
 
 @app.api_route("/analytics/global", methods=["GET", "HEAD"])
 def get_global_analytics():
@@ -117,9 +106,11 @@ def get_global_analytics():
         "tech_stats": ml_data.get('tech_stats', {})
     }
 
+
 @app.api_route("/analytics/airlines", methods=["GET", "HEAD"])
 def get_airline_analytics():
     return {"airline_chart": ml_data.get('airline_data', [])}
+
 
 @app.post("/predict")
 def predict_delay(request: FlightRequest):
@@ -134,6 +125,8 @@ def predict_delay(request: FlightRequest):
 
     if request.scheduled_departure < 0 or request.scheduled_departure > 2359:
         raise HTTPException(status_code=400, detail="Scheduled departure must be between 0000 and 2359.")
+
+    import pandas as pd
 
     hours = request.scheduled_departure // 100
     dep_hour_sin = np.sin(2 * np.pi * hours / 24)
@@ -168,21 +161,13 @@ def predict_delay(request: FlightRequest):
     target_shap = shap_values[1][0] if isinstance(shap_values, list) else shap_values[0]
     shap_data = [{"feature": col, "impact": float(val)} for col, val in zip(input_df.columns, target_shap)]
 
-    avg_route_risk = 20.0
-    avg_hour_risk = 20.0
+    route_key = f"{request.origin_airport}_{request.destination_airport}"
+    route_lookup = ml_data.get('route_lookup', {})
+    avg_route_risk = route_lookup.get(route_key, 20.0)
 
-    if 'loaded_df' in ml_data:
-        df = ml_data['loaded_df']
-        route_mask = (df['ORIGIN_AIRPORT'] == request.origin_airport) & (df['DESTINATION_AIRPORT'] == request.destination_airport)
-        route_subset = df[route_mask]
-        if len(route_subset) > 0:
-            avg_route_risk = round(float(route_subset['is_delayed'].mean() * 100), 1)
-
-        flight_hour = request.scheduled_departure // 100
-        hour_mask = df['HOUR'] == flight_hour
-        hour_subset = df[hour_mask]
-        if len(hour_subset) > 0:
-            avg_hour_risk = round(float(hour_subset['is_delayed'].mean() * 100), 1)
+    hour_str = f"{hours:02d}:00"
+    hour_entry = next((e for e in ml_data.get('global_chart_data', []) if e['time'] == hour_str), None)
+    avg_hour_risk = hour_entry['system_delay_rate'] if hour_entry else 20.0
 
     return {
         "probability": prob,
@@ -196,8 +181,9 @@ def predict_delay(request: FlightRequest):
         "avg_hour_risk": avg_hour_risk
     }
 
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     print(f"--- DYNAMIC PORT STARTUP ---")
-    print(f"🚀 Server starting on port {port} at 0.0.0.0...")
+    print(f"Server starting on port {port} at 0.0.0.0...")
     uvicorn.run(app, host="0.0.0.0", port=port)
