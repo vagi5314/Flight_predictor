@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Loader2, ChevronRight, MapPin, Info, AlertTriangle } from 'lucide-react';
 import { AIRLINES, AIRPORTS } from '@/constants/semantics';
 import GlassSelect from '@/components/GlassSelect';
+import { resolveApiUrl } from '@/lib/api';
 
 const MONTHS = [
   { value: 1, label: 'January' }, { value: 2, label: 'February' },
@@ -75,9 +76,7 @@ export default function CommandCenter({ setPredictionData, setIsLoading, isLoadi
         distance: form.distance
       };
       
-      const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://flightpredictor-production.up.railway.app';
-      const isLocal = /localhost|127\.0\.0\.1/.test(rawUrl);
-      const secureUrl = isLocal ? rawUrl : rawUrl.replace(/^http:\/\//i, 'https://');
+      const secureUrl = resolveApiUrl();
       
       const res = await axios.post(`${secureUrl}/predict`, payload);
       setPredictionData(res.data);

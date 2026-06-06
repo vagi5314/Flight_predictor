@@ -4,14 +4,13 @@ import axios from 'axios';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { AIRLINES, getAirlineName } from '@/constants/semantics';
 import { ShieldAlert, BarChart3, Binary, Zap } from 'lucide-react';
+import { resolveApiUrl } from '@/lib/api';
 
 export default function CompetitiveIntelligence() {
     const [data, setData] = useState<any[]>([]);
 
     useEffect(() => {
-        const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://flightpredictor-production.up.railway.app';
-        const isLocal = /localhost|127\.0\.0\.1/.test(rawUrl);
-        const secureUrl = isLocal ? rawUrl : rawUrl.replace(/^http:\/\//i, 'https://');
+        const secureUrl = resolveApiUrl();
 
         axios.get(`${secureUrl}/analytics/airlines`).then(res => {
             const mapped = res.data.airline_chart.map((item: any) => ({

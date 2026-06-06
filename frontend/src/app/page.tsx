@@ -15,6 +15,7 @@ import clsx from 'clsx';
 import CommandCenter from '@/components/CommandCenter';
 import IntelligenceHub from '@/components/IntelligenceHub';
 import Methodology from '@/components/Methodology';
+import { resolveApiUrl } from '@/lib/api';
 
 function cn(...inputs: any[]) { return twMerge(clsx(inputs)); }
 
@@ -27,9 +28,7 @@ export default function AeroMetricGlass() {
   const [techStats, setTechStats] = useState<any>(null);
 
   useEffect(() => {
-    const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://flightpredictor-production.up.railway.app';
-    const isLocal = /localhost|127\.0\.0\.1/.test(rawUrl);
-    const secureUrl = isLocal ? rawUrl : rawUrl.replace(/^http:\/\//i, 'https://');
+    const secureUrl = resolveApiUrl();
     
     axios.get(`${secureUrl}/analytics/global`).then(res => {
       setTechStats(res.data.tech_stats);
