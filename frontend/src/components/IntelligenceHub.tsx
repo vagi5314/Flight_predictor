@@ -168,8 +168,8 @@ export default function IntelligenceHub({ data, isLoading }: any) {
               </div>
             </div>
 
-            <div className="h-[200px] w-full z-10">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[200px] w-full z-10" style={{ minHeight: 200 }}>
+              <ResponsiveContainer width="100%" height="100%" debounce={50}>
                 <RadarChart cx="50%" cy="50%" outerRadius="50%" data={bipolarData}>
                   <PolarGrid stroke="rgba(255,255,255,0.15)" />
                   <PolarAngleAxis dataKey="subject" tick={{ fill: '#ffffff', fontSize: 8, fontFamily: 'monospace', fontWeight: 'bold' }} />

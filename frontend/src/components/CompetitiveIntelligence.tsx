@@ -60,8 +60,8 @@ export default function CompetitiveIntelligence() {
                    <h3 className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-[0.3em]">Operational Risk Gradient</h3>
                 </div>
 
-                <div className="h-[400px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="h-[400px] w-full" style={{ minHeight: 400 }}>
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
                         <BarChart data={data} layout="vertical" margin={{ left: 15, right: 30 }}>
                             <XAxis type="number" hide />
                             <YAxis 
