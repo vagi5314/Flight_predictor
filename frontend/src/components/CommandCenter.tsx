@@ -76,7 +76,8 @@ export default function CommandCenter({ setPredictionData, setIsLoading, isLoadi
       };
       
       const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://flightpredictor-production.up.railway.app';
-      const secureUrl = rawUrl.replace(/^http:\/\//i, 'https://');
+      const isLocal = /localhost|127\.0\.0\.1/.test(rawUrl);
+      const secureUrl = isLocal ? rawUrl : rawUrl.replace(/^http:\/\//i, 'https://');
       
       const res = await axios.post(`${secureUrl}/predict`, payload);
       setPredictionData(res.data);
