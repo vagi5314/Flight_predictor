@@ -42,10 +42,36 @@ async def lifespan(app: FastAPI):
                 df['HOUR'] = 0
 
             ml_data['loaded_df'] = df
-            ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
-            ml_data['airline_data'] = [{"carrier": c, "risk": 20.0} for c in ['AA', 'DL', 'UA', 'WN', 'AS', 'NK', 'B6']]
-            ml_data['tech_stats'] = {"rows_processed": "Optimized", "optimization": "Active", "model": "LightGBM"}
-            print("✅ Data loaded and HOUR column created")
+
+            # Compute real aggregates from the parquet so the dashboard reflects actual data
+            if 'is_delayed' in df.columns:
+                hourly_rates = df.groupby('HOUR', observed=True)['is_delayed'].mean() * 100
+                ml_data['global_chart_data'] = [
+                    {"time": f"{int(h):02d}:00", "system_delay_rate": round(float(rate), 1)}
+                    for h, rate in hourly_rates.items()
+                ]
+                present = {entry["time"]: entry["system_delay_rate"] for entry in ml_data['global_chart_data']}
+                ml_data['global_chart_data'] = [
+                    {"time": f"{h:02d}:00", "system_delay_rate": present.get(f"{h:02d}:00", 0.0)}
+                    for h in range(24)
+                ]
+
+                airline_rates = df.groupby('AIRLINE', observed=True)['is_delayed'].mean().sort_values(ascending=False) * 100
+                ml_data['airline_data'] = [
+                    {"carrier": str(carrier), "risk": round(float(rate), 1)}
+                    for carrier, rate in airline_rates.items()
+                ]
+            else:
+                # Parquet loaded but lacks the target column; keep synthetic so the API stays consistent
+                ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
+                ml_data['airline_data'] = [{"carrier": c, "risk": 20.0} for c in ['AA', 'DL', 'UA', 'WN', 'AS', 'NK', 'B6']]
+
+            ml_data['tech_stats'] = {
+                "rows_processed": f"{len(df):,}",
+                "optimization": "Parquet + Type Downcasting",
+                "model": "LightGBM"
+            }
+            print(f"✅ Data loaded: {len(df):,} rows; HOUR column ready; real hourly + airline aggregates computed")
         else:
             print("⚠️ WARNING: flights_optimized.parquet missing. Using synthetic fallbacks.")
             ml_data['global_chart_data'] = [{"time": f"{h:02d}:00", "system_delay_rate": 15.0} for h in range(24)]
